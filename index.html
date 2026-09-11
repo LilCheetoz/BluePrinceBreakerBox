@@ -1,0 +1,867 @@
+<title>V.A.C. Breaker Panel</title>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Permanent+Marker&family=Special+Elite&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{
+    --wall:#15171b;
+    --wall-edge:#0d0e10;
+    --metal:#3a4048;
+    --metal-hi:#4d545d;
+    --metal-lo:#2a2e34;
+    --metal-deep:#1c1f23;
+    --wood:#7c5a34;
+    --wood-dark:#4a3520;
+    --wood-grain:#6b4c2a;
+    --paper:#e8e1cb;
+    --paper-edge:#c9bf9d;
+    --ink:#2a2620;
+    --danger:#b8402f;
+    --amber:#d99a3f;
+    --amber-glow:#f0b45c;
+    --text:#e9e5da;
+    --text-dim:#9aa0a8;
+    --text-faint:#6b7178;
+
+    --c-gray:#8b9096;
+    --c-blue:#3f7fd1;
+    --c-green:#4f9e58;
+    --c-white:#f4f1e6;
+    --c-red:#c1453a;
+    --c-purple:#8a5fc2;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, #24272c 0%, var(--wall) 55%, var(--wall-edge) 100%);
+    color:var(--text);
+    font-family:'Special Elite', 'Courier New', monospace;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:2.5rem 1rem 4rem;
+  }
+
+  .rig{
+    width:100%;
+    max-width:640px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0;
+  }
+
+  .conduit-note{
+    font-family:'Special Elite', monospace;
+    font-size:0.72rem;
+    color:var(--text-faint);
+    letter-spacing:.03em;
+    margin-bottom:.9rem;
+    text-align:center;
+  }
+
+  /* ---- Panel shell ---- */
+  .panel{
+    position:relative;
+    width:100%;
+    background:linear-gradient(155deg, var(--metal-hi) 0%, var(--metal) 12%, var(--metal) 78%, var(--metal-lo) 100%);
+    border:1px solid #1a1c1f;
+    border-radius:10px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,.7),
+      0 2px 0 rgba(255,255,255,.06) inset,
+      0 -2px 0 rgba(0,0,0,.4) inset;
+    padding:1.4rem 1.4rem 1.8rem;
+  }
+
+  .rivet{
+    position:absolute;
+    width:9px; height:9px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #7a828c, #23262b 75%);
+    box-shadow:0 1px 1px rgba(0,0,0,.6);
+  }
+  .rivet.tl{ top:10px; left:10px; }
+  .rivet.tr{ top:10px; right:10px; }
+  .rivet.bl{ bottom:10px; left:10px; }
+  .rivet.br{ bottom:10px; right:10px; }
+
+  /* ---- Header ---- */
+  .header-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:1rem;
+    margin-bottom:1rem;
+  }
+
+  .id-plate{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:.14em;
+    color:var(--text-dim);
+    font-size:0.95rem;
+    padding-top:2px;
+  }
+  .id-plate span{
+    display:block;
+    font-family:'Space Mono', monospace;
+    letter-spacing:0;
+    font-size:0.68rem;
+    color:var(--text-faint);
+    margin-top:2px;
+  }
+
+  .hazard{
+    height:7px;
+    border-radius:2px;
+    background:repeating-linear-gradient(135deg, var(--amber) 0 10px, #1c1e21 10px 20px);
+    opacity:.85;
+    margin:.15rem 0 1rem;
+  }
+
+  .warn-triangle{
+    width:44px; height:40px;
+    position:relative;
+    flex-shrink:0;
+  }
+  .warn-triangle svg{ width:100%; height:100%; }
+
+  .stamp-row{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+    margin-bottom:1.1rem;
+    min-height:46px;
+  }
+
+  .danger-stamp{
+    font-family:'Bebas Neue', sans-serif;
+    background:var(--paper);
+    color:var(--danger);
+    border:2px solid var(--danger);
+    padding:.25rem .7rem .15rem;
+    font-size:1.1rem;
+    letter-spacing:.1em;
+    transform:rotate(-2deg);
+    box-shadow:1px 2px 3px rgba(0,0,0,.4);
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .danger-stamp.hidden{ opacity:0; transform:rotate(-2deg) scale(.8); pointer-events:none; }
+
+  .power-stamp{
+    font-family:'Bebas Neue', sans-serif;
+    background:var(--paper);
+    color:#3f7a3f;
+    border:2px solid #3f7a3f;
+    padding:.25rem .7rem .15rem;
+    font-size:1.1rem;
+    letter-spacing:.08em;
+    transform:rotate(-2deg);
+    box-shadow:1px 2px 3px rgba(0,0,0,.4);
+    position:absolute;
+    opacity:0;
+    transition:opacity .4s ease, transform .4s ease;
+    pointer-events:none;
+  }
+  .power-stamp.show{ opacity:1; transform:rotate(-2deg) scale(1.04); }
+
+  .keycard{
+    margin-left:auto;
+    text-align:right;
+    font-family:'Bebas Neue', sans-serif;
+    font-size:0.7rem;
+    letter-spacing:.1em;
+    color:var(--danger);
+    background:var(--paper);
+    border:1px solid var(--paper-edge);
+    padding:.3rem .5rem;
+    line-height:1.25;
+    box-shadow:1px 2px 3px rgba(0,0,0,.35);
+  }
+
+  /* ---- Wood plank title ---- */
+  .plank{
+    position:relative;
+    background:repeating-linear-gradient(90deg, var(--wood) 0 3px, var(--wood-grain) 3px 6px);
+    border:1px solid var(--wood-dark);
+    border-radius:2px;
+    padding:.55rem .5rem .5rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 3px 6px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.08) inset;
+  }
+  .plank::before, .plank::after{
+    content:'';
+    position:absolute;
+    width:8px; height:8px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #cbb27a, #6b5a35 75%);
+    top:50%; transform:translateY(-50%);
+    box-shadow:0 1px 1px rgba(0,0,0,.5);
+  }
+  .plank::before{ left:10px; }
+  .plank::after{ right:10px; }
+  .plank-text{
+    font-family:'Permanent Marker', cursive;
+    color:#f2ead3;
+    font-size:1.15rem;
+    letter-spacing:.03em;
+    text-shadow:0 1px 1px rgba(0,0,0,.4);
+  }
+
+  .arrow-row{
+    text-align:center;
+    color:var(--amber);
+    font-size:.7rem;
+    line-height:1;
+    opacity:.8;
+  }
+  .arrow-row.up{ margin:.5rem 0 .25rem; }
+  .arrow-row.down{ margin:.25rem 0 .6rem; }
+
+  /* ---- Light bezel ---- */
+  .bezel{
+    background:linear-gradient(180deg, var(--metal-deep), #101215);
+    border-radius:6px;
+    box-shadow:0 3px 10px rgba(0,0,0,.6) inset, 0 1px 0 rgba(255,255,255,.04);
+    padding:1rem .75rem .6rem;
+    display:flex;
+    justify-content:space-between;
+    gap:.4rem;
+  }
+
+  .light-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.4rem;
+    flex:1;
+  }
+
+  .light-btn{
+    width:100%;
+    aspect-ratio:1;
+    max-width:64px;
+    border-radius:50%;
+    border:2px solid rgba(0,0,0,.5);
+    cursor:pointer;
+    position:relative;
+    transition:transform .12s ease, box-shadow .25s ease, background .25s ease;
+    background:radial-gradient(circle at 35% 30%, var(--dot-hi), var(--dot) 70%);
+    box-shadow:
+      0 0 0 3px var(--metal-lo),
+      0 2px 4px rgba(0,0,0,.6),
+      0 0 14px 1px var(--dot-glow);
+  }
+  .light-btn:hover{ transform:translateY(-1px); }
+  .light-btn:active{ transform:translateY(1px) scale(.96); }
+  .light-btn:focus-visible{ outline:2px solid var(--amber-glow); outline-offset:3px; }
+  .light-btn:disabled{ cursor:default; }
+
+  .light-idx{
+    font-family:'Space Mono', monospace;
+    font-size:.62rem;
+    color:var(--text-faint);
+  }
+
+  /* ---- Confirm hint ---- */
+  .confirm-hint{
+    text-align:center;
+    font-family:'Special Elite', monospace;
+    font-size:.72rem;
+    color:var(--text-faint);
+    margin-top:.65rem;
+    min-height:1.1em;
+    transition:color .3s ease;
+  }
+  .confirm-hint.ready{
+    color:var(--amber-glow);
+    animation:pulse-text 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .confirm-hint.ready{ animation:none; }
+  }
+  @keyframes pulse-text{ 0%,100%{opacity:.75;} 50%{opacity:1;} }
+
+  /* ---- Stats readout ---- */
+  .readout{
+    display:flex;
+    justify-content:space-between;
+    gap:.5rem;
+    margin:1.1rem 0 .9rem;
+    background:var(--metal-deep);
+    border-radius:5px;
+    padding:.6rem .3rem;
+    box-shadow:0 2px 6px rgba(0,0,0,.5) inset;
+  }
+  .stat{
+    flex:1;
+    text-align:center;
+    border-right:1px solid rgba(255,255,255,.06);
+  }
+  .stat:last-child{ border-right:none; }
+  .stat-label{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:.12em;
+    font-size:.62rem;
+    color:var(--text-faint);
+  }
+  .stat-value{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:1.05rem;
+    color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
+  .stat-sub{
+    font-family:'Space Mono', monospace;
+    font-size:.6rem;
+    color:var(--text-faint);
+  }
+
+  /* ---- Controls ---- */
+  .controls{
+    display:flex;
+    gap:.5rem;
+    margin-bottom:.9rem;
+  }
+  .ctrl-btn{
+    flex:1;
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:.08em;
+    font-size:.85rem;
+    color:var(--text);
+    background:linear-gradient(180deg, var(--metal-hi), var(--metal-lo));
+    border:1px solid #1a1c1f;
+    border-radius:4px;
+    padding:.5rem .4rem;
+    cursor:pointer;
+    box-shadow:0 2px 0 rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.08) inset;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .ctrl-btn:hover{ color:var(--amber-glow); }
+  .ctrl-btn:active{ transform:translateY(2px); box-shadow:0 0 0 rgba(0,0,0,.4); }
+  .ctrl-btn:focus-visible{ outline:2px solid var(--amber-glow); outline-offset:2px; }
+  .ctrl-btn:disabled{ opacity:.4; cursor:default; }
+
+  /* ---- Cheat sheet note ---- */
+  .note-wrap{
+    display:grid;
+    grid-template-rows:0fr;
+    transition:grid-template-rows .35s ease;
+    margin-bottom:.9rem;
+  }
+  .note-wrap.open{ grid-template-rows:1fr; }
+  .note-inner{ overflow:hidden; }
+  .note{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Special Elite', monospace;
+    font-size:.82rem;
+    line-height:1.5;
+    padding:.9rem 1rem .8rem;
+    border-radius:2px;
+    transform:rotate(-.6deg);
+    box-shadow:0 6px 12px rgba(0,0,0,.4);
+    position:relative;
+  }
+  .note::before{
+    content:'';
+    position:absolute;
+    top:-8px; left:50%;
+    transform:translateX(-50%) rotate(4deg);
+    width:34px; height:16px;
+    background:rgba(217,154,63,.55);
+    border:1px solid rgba(180,120,40,.5);
+  }
+  .note h3{
+    margin:0 0 .5rem;
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:.08em;
+    font-size:1rem;
+    color:var(--danger);
+  }
+  .note ol{ margin:0 0 .6rem; padding-left:1.2rem; }
+  .note li{ margin-bottom:.25rem; }
+  .note .final-note{
+    font-style:italic;
+    color:#4a4535;
+    border-top:1px dashed var(--paper-edge);
+    padding-top:.5rem;
+  }
+
+  /* ---- Breakers ---- */
+  .breaker-head{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:.14em;
+    font-size:.75rem;
+    color:var(--text-faint);
+    text-align:center;
+    margin-bottom:.5rem;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  .breaker-head::before, .breaker-head::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:rgba(255,255,255,.08);
+  }
+
+  .breakers{
+    display:flex;
+    flex-direction:column;
+    gap:.4rem;
+  }
+  .breaker-row{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+    background:linear-gradient(180deg, #2f343b, #262a30);
+    border:1px solid #1a1c1f;
+    border-radius:4px;
+    padding:.4rem .6rem;
+  }
+  .toggle{
+    width:46px; height:22px;
+    border-radius:3px;
+    background:var(--metal-deep);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.6);
+    position:relative;
+    flex-shrink:0;
+  }
+  .toggle::after{
+    content:'';
+    position:absolute;
+    top:2px; left:2px;
+    width:20px; height:18px;
+    border-radius:2px;
+    background:linear-gradient(180deg,#6b7078,#454a51);
+    box-shadow:0 1px 2px rgba(0,0,0,.5);
+    transition:left .35s cubic-bezier(.4,1.6,.6,1), background .35s ease;
+  }
+  .toggle.on::after{
+    left:24px;
+    background:linear-gradient(180deg,#6fce7a,#3f9e4d);
+  }
+  .toggle-labels{
+    position:absolute; inset:0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'Space Mono', monospace;
+    font-size:.42rem;
+    color:var(--text-faint);
+    padding:0 3px;
+    pointer-events:none;
+  }
+  .breaker-label{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:.08em;
+    font-size:.85rem;
+    color:var(--text-dim);
+    transition:color .3s ease;
+  }
+  .breaker-row.on .breaker-label{ color:var(--text); }
+  .breaker-row.on{ box-shadow:0 0 10px -2px rgba(111,206,122,.35); }
+
+  .footnote{
+    text-align:center;
+    font-family:'Special Elite', monospace;
+    font-size:.68rem;
+    color:var(--text-faint);
+    margin-top:1.1rem;
+    line-height:1.5;
+  }
+
+  @media (max-width:400px){
+    .light-btn{ max-width:44px; }
+    .stat-value{ font-size:.9rem; }
+  }
+</style>
+
+<div class="rig">
+  <div class="conduit-note">UTILITY CLOSET — RANK 4 — V.A.C. RESET TRAINER</div>
+
+  <div class="panel">
+    <div class="rivet tl"></div><div class="rivet tr"></div>
+    <div class="rivet bl"></div><div class="rivet br"></div>
+
+    <div class="hazard"></div>
+
+    <div class="header-row">
+      <div class="id-plate">MAIN&nbsp;PANEL<span>SEC.&nbsp;4 / SUB&nbsp;12</span></div>
+      <div class="warn-triangle" aria-hidden="true">
+        <svg viewBox="0 0 44 40">
+          <polygon points="22,2 42,37 2,37" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linejoin="round"/>
+          <text x="22" y="31" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="20" fill="var(--amber)">!</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stamp-row">
+      <div style="position:relative;">
+        <div class="danger-stamp" id="dangerStamp">DANGER — LIVE CIRCUIT</div>
+        <div class="power-stamp" id="powerStamp">POWER RESTORED</div>
+      </div>
+      <div class="keycard">KEYCARD&nbsp;ENTRY<br>SYSTEM&nbsp;OFFLINE</div>
+    </div>
+
+    <div class="plank"><span class="plank-text">V.A.C. Indicators</span></div>
+    <div class="arrow-row up">▲ ▲ ▲ ▲ ▲ ▲</div>
+
+    <div class="bezel" id="bezel"></div>
+    <div class="arrow-row down">▼ ▼ ▼ ▼ ▼ ▼</div>
+    <div class="confirm-hint" id="confirmHint">Cycle lights toward purple to unlock white.</div>
+
+    <div class="readout">
+      <div class="stat">
+        <div class="stat-label">CLICKS</div>
+        <div class="stat-value" id="statClicks">0</div>
+        <div class="stat-sub" id="statBestClicks">best —</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">TIME</div>
+        <div class="stat-value" id="statTime">0:00.0</div>
+        <div class="stat-sub" id="statBestTime">best —</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">ATTEMPTS</div>
+        <div class="stat-value" id="statAttempts">1</div>
+        <div class="stat-sub">runs this session</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" id="btnReset" type="button">RESET</button>
+      <button class="ctrl-btn" id="btnUndo" type="button">UNDO</button>
+      <button class="ctrl-btn" id="btnSolution" type="button" aria-expanded="false">SOLUTION ▾</button>
+    </div>
+
+    <div class="note-wrap" id="noteWrap">
+      <div class="note-inner">
+        <div class="note">
+          <h3>Maintenance Note — V.A.C. Sequence</h3>
+          <p style="margin:.2rem 0 .4rem;font-weight:bold;">Phase 1a — light up 2 through 6, leave 1 off</p>
+          <ol>
+            <li>Click all six lights once each so they're all green.</li>
+            <li>Click the fifth light — its green neighbor (the sixth) turns blue.</li>
+            <li>Click the sixth, then fifth, then fourth, then third, then second, then first (each now blue in turn) — each click lights up both neighbors next to it (green ones and the off one left behind by the last click), while the light you clicked switches off itself. The "off" gap just walks down the line.</li>
+            <li>After clicking the first light, lights two through six are all blue and light one is off.</li>
+          </ol>
+          <p style="margin:.6rem 0 .4rem;font-weight:bold;">Phase 1b — turn that blue into purple, one at a time</p>
+          <ol>
+            <li>Click the first (off) light twice — green, then red.</li>
+            <li>Click the second (blue) light — it turns the first light purple and switches off.</li>
+            <li>Click the second light twice — green, then red.</li>
+            <li>Click the third (still blue) light — it turns the second light purple and switches off.</li>
+            <li>Click the third light twice — green, then red.</li>
+            <li>Click the fourth (still blue) light — it turns the third light purple and switches off.</li>
+            <li>Click the fourth light twice — green, then red.</li>
+            <li>Click the fifth (still blue) light — it turns the fourth light purple and switches off.</li>
+            <li>Click the fifth light twice — green, then red.</li>
+            <li>Click the sixth (still blue) light — it turns the fifth light purple and switches off.</li>
+            <li>Click the sixth light twice — green, then red.</li>
+            <li>Click the sixth light once more — with a purple neighbor, it turns purple too. All six are now purple.</li>
+          </ol>
+          <p style="font-size:.78rem;color:#4a4535;margin:.3rem 0 0;">A light only ever turns purple by having a <em>blue</em> light clicked next to it — an off light with a red neighbor just turns itself green. Blue always switches itself off the moment it's clicked, whether it's lighting up green neighbors or turning a red one purple.</p>
+          <p style="margin:.6rem 0 .4rem;font-weight:bold;">Phase 2 — place white and settle</p>
+          <ol>
+            <li>Click the fourth (purple) light to turn it white.</li>
+            <li>Click the sixth (purple) light to turn it blue.</li>
+            <li>Click the sixth (blue) light — it turns off, and the blue moves to the fifth (taking over the purple there).</li>
+            <li>Click the sixth light twice — green, then red.</li>
+            <li>Click the fifth (blue) light — it turns off, and the sixth light turns purple.</li>
+            <li>Click the fifth light twice — green, then red.</li>
+            <li>Click the second (purple) light once — it turns blue.</li>
+            <li>Click the third (purple) light three times — blue, then off, then green.</li>
+            <li>Click the first (purple) light twice — blue, then off. Power restored.</li>
+          </ol>
+          <div class="final-note">The panel is only fully restored once the strip reads gray, blue, green, white, red, purple left to right. Every light starts off (gray) and just turns green when clicked &mdash; purple only ever comes from clicking a blue light next to a red one.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="breaker-head">BREAKERS</div>
+    <div class="breakers" id="breakers"></div>
+
+    <div class="footnote">Click a light, or use <strong>A</strong>/<strong>D</strong> to move between lights, <strong>W</strong>/<strong>S</strong> to reach the controls, and <strong>Enter</strong> to activate.<br>Reset returns every light to off. Undo steps back one click.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const N = 6;
+  const COLOR_VARS = {
+    gray:   { dot:'#8b9096', hi:'#c3c7cb', glow:'rgba(139,144,150,.35)' },
+    blue:   { dot:'#3f7fd1', hi:'#8bb6ec', glow:'rgba(63,127,209,.55)' },
+    green:  { dot:'#4f9e58', hi:'#9bd3a1', glow:'rgba(79,158,88,.5)' },
+    white:  { dot:'#f4f1e6', hi:'#ffffff', glow:'rgba(244,241,230,.75)' },
+    red:    { dot:'#c1453a', hi:'#e88d84', glow:'rgba(193,69,58,.55)' },
+    purple: { dot:'#8a5fc2', hi:'#c1a4ea', glow:'rgba(138,95,194,.6)' }
+  };
+  const BREAKER_LABELS = ['GYMNASIUM','DARK ROOM','GARAGE','UNMARKED'];
+  const TARGET = ['gray','blue','green','white','red','purple'];
+
+  let state, history, clicks, attempts, solved, startTime, elapsedMs, timerId;
+
+  const bezelEl = document.getElementById('bezel');
+  const breakersEl = document.getElementById('breakers');
+  const confirmHintEl = document.getElementById('confirmHint');
+  const dangerStampEl = document.getElementById('dangerStamp');
+  const powerStampEl = document.getElementById('powerStamp');
+  const statClicksEl = document.getElementById('statClicks');
+  const statTimeEl = document.getElementById('statTime');
+  const statAttemptsEl = document.getElementById('statAttempts');
+  const statBestClicksEl = document.getElementById('statBestClicks');
+  const statBestTimeEl = document.getElementById('statBestTime');
+  const btnReset = document.getElementById('btnReset');
+  const btnUndo = document.getElementById('btnUndo');
+  const btnSolution = document.getElementById('btnSolution');
+  const noteWrap = document.getElementById('noteWrap');
+
+  let lightButtons = [];
+  for(let i=0;i<N;i++){
+    const col = document.createElement('div');
+    col.className = 'light-col';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'light-btn';
+    btn.addEventListener('click', () => handleClick(i));
+    btn.addEventListener('focus', () => { cursorRow = 'lights'; cursorCol = i; });
+    const idx = document.createElement('div');
+    idx.className = 'light-idx';
+    idx.textContent = i+1;
+    col.appendChild(btn);
+    col.appendChild(idx);
+    bezelEl.appendChild(col);
+    lightButtons.push(btn);
+  }
+
+  let breakerRows = [];
+  BREAKER_LABELS.forEach(label => {
+    const row = document.createElement('div');
+    row.className = 'breaker-row';
+    row.innerHTML =
+      '<div class="toggle"><div class="toggle-labels"><span>ON</span><span>OFF</span></div></div>' +
+      '<div class="breaker-label">' + label + '</div>';
+    breakersEl.appendChild(row);
+    breakerRows.push(row);
+  });
+
+  function loadBest(){
+    try{
+      const raw = localStorage.getItem('vac-breaker-best');
+      return raw ? JSON.parse(raw) : {clicks:null, timeMs:null};
+    }catch(e){ return {clicks:null, timeMs:null}; }
+  }
+  function saveBest(best){
+    try{ localStorage.setItem('vac-breaker-best', JSON.stringify(best)); }catch(e){}
+  }
+  let best = loadBest();
+
+  function neighbors(i){
+    const arr = [];
+    if(i>0) arr.push(i-1);
+    if(i<N-1) arr.push(i+1);
+    return arr;
+  }
+
+  function applyClick(i){
+    const c = state[i];
+    const nbrs = neighbors(i);
+    if(c === 'gray'){
+      state[i] = 'green';
+    } else if(c === 'green'){
+      const right = i < N-1 ? i+1 : null;
+      const allGreen = state.every(x => x==='green');
+      if(allGreen && right !== null && state[right] === 'green'){
+        state[right] = 'blue';
+      } else {
+        state[i] = 'red';
+      }
+    } else if(c === 'blue'){
+      state[i] = 'gray';
+      nbrs.forEach(j => {
+        if(state[j]==='green' || state[j]==='gray') state[j] = 'blue';
+        else if(state[j]==='red') state[j] = 'purple';
+        else if(state[j]==='purple') state[j] = 'blue';
+      });
+    } else if(c === 'red'){
+      const othersAllPurple = state.every((x, idx) => idx === i || x === 'purple');
+      state[i] = othersAllPurple ? 'purple' : 'green';
+    } else if(c === 'purple'){
+      const allPurple = state.every(x => x==='purple');
+      if(allPurple){
+        state[i] = 'white';
+      } else if(nbrs.some(j => state[j]==='gray')){
+        state[i] = 'gray';
+      } else {
+        state[i] = 'blue';
+      }
+    }
+  }
+
+  function formatTime(ms){
+    const totalTenths = Math.floor(ms/100);
+    const mins = Math.floor(totalTenths / 600);
+    const secs = Math.floor((totalTenths % 600) / 10);
+    const tenths = totalTenths % 10;
+    return mins + ':' + String(secs).padStart(2,'0') + '.' + tenths;
+  }
+
+  function startTimerIfNeeded(){
+    if(startTime === null){
+      startTime = Date.now();
+      timerId = setInterval(()=>{
+        elapsedMs = Date.now() - startTime;
+        statTimeEl.textContent = formatTime(elapsedMs);
+      }, 100);
+    }
+  }
+  function stopTimer(){
+    if(timerId){ clearInterval(timerId); timerId = null; }
+  }
+
+  function render(){
+    for(let i=0;i<N;i++){
+      const c = state[i];
+      const v = COLOR_VARS[c];
+      const btn = lightButtons[i];
+      btn.style.setProperty('--dot', v.dot);
+      btn.style.setProperty('--dot-hi', v.hi);
+      btn.style.setProperty('--dot-glow', v.glow);
+      btn.setAttribute('aria-label', 'Light ' + (i+1) + ': ' + c);
+      btn.disabled = solved;
+    }
+    statClicksEl.textContent = clicks;
+    statAttemptsEl.textContent = attempts;
+    statBestClicksEl.textContent = best.clicks !== null ? ('best ' + best.clicks) : 'best —';
+    statBestTimeEl.textContent = best.timeMs !== null ? ('best ' + formatTime(best.timeMs)) : 'best —';
+    btnUndo.disabled = history.length === 0 || solved;
+
+    const allPurple = state.every(x => x==='purple');
+    if(solved){
+      confirmHintEl.textContent = 'Power restored. Reset to run it again.';
+      confirmHintEl.classList.remove('ready');
+    } else if(allPurple){
+      confirmHintEl.textContent = 'All six purple — place white, then settle to gray / blue / green / white / red / purple.';
+      confirmHintEl.classList.add('ready');
+    } else {
+      confirmHintEl.textContent = 'Cycle lights toward purple to unlock white.';
+      confirmHintEl.classList.remove('ready');
+    }
+  }
+
+  function handleClick(i){
+    if(solved) return;
+    history.push(state.slice());
+    startTimerIfNeeded();
+    applyClick(i);
+    clicks++;
+    if(state.every((c, idx) => c === TARGET[idx])){
+      solved = true;
+      stopTimer();
+      if(best.clicks === null || clicks < best.clicks) best.clicks = clicks;
+      if(best.timeMs === null || elapsedMs < best.timeMs) best.timeMs = elapsedMs;
+      saveBest(best);
+      render();
+      dangerStampEl.classList.add('hidden');
+      powerStampEl.classList.add('show');
+      breakerRows.forEach((row, idx2) => {
+        setTimeout(()=>{
+          row.classList.add('on');
+          row.querySelector('.toggle').classList.add('on');
+        }, idx2*180);
+      });
+      return;
+    }
+    render();
+  }
+
+  function resetPuzzle(){
+    state = Array(N).fill('gray');
+    history = [];
+    clicks = 0;
+    attempts = (attempts || 0) + 1;
+    saveAttempts(attempts);
+    solved = false;
+    stopTimer();
+    startTime = null;
+    elapsedMs = 0;
+    statTimeEl.textContent = '0:00.0';
+    dangerStampEl.classList.remove('hidden');
+    powerStampEl.classList.remove('show');
+    breakerRows.forEach(row => {
+      row.classList.remove('on');
+      row.querySelector('.toggle').classList.remove('on');
+    });
+    render();
+  }
+
+  btnReset.addEventListener('click', () => resetPuzzle());
+  btnUndo.addEventListener('click', () => {
+    if(history.length === 0 || solved) return;
+    state = history.pop();
+    clicks = Math.max(0, clicks - 1);
+    render();
+  });
+  btnSolution.addEventListener('click', () => {
+    const open = noteWrap.classList.toggle('open');
+    btnSolution.setAttribute('aria-expanded', String(open));
+    btnSolution.textContent = open ? 'SOLUTION ▴' : 'SOLUTION ▾';
+  });
+
+  // ---- WASD / arrow-key navigation across lights and controls ----
+  const controlRow = [btnReset, btnUndo, btnSolution];
+  let cursorRow = 'lights';
+  let cursorCol = 0;
+  controlRow.forEach((btn, i) => {
+    btn.addEventListener('focus', () => { cursorRow = 'controls'; cursorCol = i; });
+  });
+
+  function moveCursor(dRow, dCol){
+    if(dRow !== 0){
+      cursorRow = cursorRow === 'lights' ? 'controls' : 'lights';
+    }
+    const arr = cursorRow === 'lights' ? lightButtons : controlRow;
+    cursorCol = Math.max(0, Math.min(arr.length - 1, cursorCol + dCol));
+    const target = arr[cursorCol];
+    if(target && !target.disabled) target.focus();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const key = e.key.toLowerCase();
+    if(key === 'a' || key === 'arrowleft'){ e.preventDefault(); moveCursor(0, -1); }
+    else if(key === 'd' || key === 'arrowright'){ e.preventDefault(); moveCursor(0, 1); }
+    else if(key === 'w' || key === 'arrowup'){ e.preventDefault(); if(cursorRow === 'controls') moveCursor(-1, 0); }
+    else if(key === 's' || key === 'arrowdown'){ e.preventDefault(); if(cursorRow === 'lights') moveCursor(1, 0); }
+    else if(key === 'enter' || key === ' '){
+      const arr = cursorRow === 'lights' ? lightButtons : controlRow;
+      const target = arr[cursorCol];
+      if(target && !target.disabled){
+        e.preventDefault();
+        target.click();
+      }
+    }
+  });
+
+  function loadAttempts(){
+    try{
+      const raw = localStorage.getItem('vac-breaker-attempts');
+      return raw ? parseInt(raw, 10) || 0 : 0;
+    }catch(e){ return 0; }
+  }
+  function saveAttempts(n){
+    try{ localStorage.setItem('vac-breaker-attempts', String(n)); }catch(e){}
+  }
+
+  attempts = loadAttempts();
+  resetPuzzle();
+})();
+</script>
