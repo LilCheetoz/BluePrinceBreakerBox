@@ -550,8 +550,9 @@
           <p style="margin:.2rem 0 .4rem;font-weight:bold;">Phase 1a — light up 2 through 6, leave 1 off</p>
           <ol>
             <li>Click all six lights once each so they're all green.</li>
-            <li>Click the fifth light — its green neighbor (the sixth) turns blue.</li>
-            <li>Click the sixth, then fifth, then fourth, then third, then second, then first (each now blue in turn) — each click lights up both neighbors next to it (green ones and the off one left behind by the last click), while the light you clicked switches off itself. The "off" gap just walks down the line.</li>
+            <li>Click the fifth light — it turns blue (any light does this on first click while all six are green).</li>
+            <li>Click the fifth (blue) light again — its two neighbors (fourth and sixth) both turn blue, and the fifth switches off.</li>
+            <li>Click the fourth, then third, then second, then first (each now blue in turn) — each click lights up both neighbors next to it (a green one and the off one left behind by the last click), while the light you clicked switches off itself. The "off" gap just walks down the line.</li>
             <li>After clicking the first light, lights two through six are all blue and light one is off.</li>
           </ol>
           <p style="margin:.6rem 0 .4rem;font-weight:bold;">Phase 1b — turn that blue into purple, one at a time</p>
@@ -678,13 +679,9 @@
     if(c === 'gray'){
       state[i] = 'green';
     } else if(c === 'green'){
-      const right = i < N-1 ? i+1 : null;
-      const left = i > 0 ? i-1 : null;
       const allGreen = state.every(x => x==='green');
-      if(allGreen && right !== null && state[right] === 'green'){
-        state[right] = 'blue';
-      } else if(allGreen && right === null && left !== null && state[left] === 'green'){
-        state[left] = 'blue';
+      if(allGreen){
+        state[i] = 'blue';
       } else {
         state[i] = 'red';
       }
